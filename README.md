@@ -45,9 +45,9 @@ kernel claimed, and your `fprintd`/`libfprint` versions.
 ./scripts/build-driver.sh
 ```
 
-Installs build deps via `apt`, clones pinned `vojtapl/synaTudorMiS`,
-checksum-verifies and applies the Kensington patch, then builds
-`libfprint` with the `synatlsmoc` driver and runs its offline test.
+Installs build deps via `apt`, integrity-checks the vendored source
+(`vendor/`, works offline), then builds `libfprint` with the
+`synatlsmoc` driver and runs its offline test.
 Takes a few minutes. Re-runnable.
 
 ### 2. Pair the reader (one time)
@@ -112,14 +112,16 @@ and confirm password fallback still works before logging out.
 
 ```sh
 scripts/probe.sh            # read-only device + stack detection
-scripts/build-driver.sh     # pinned, checksummed, Ubuntu-native build
+scripts/build-driver.sh     # integrity-checked, offline-capable Ubuntu build
 scripts/install-driver.sh   # /opt install + fprintd drop-in (reversible)
 scripts/uninstall-driver.sh # removes drop-in + /opt copy, restarts fprintd
 scripts/enable-pam.sh       # Ubuntu pam-auth-update wiring
 scripts/test-device.sh      # fprintd discovery + enroll/verify smoke
 udev/70-verimark-dt.rules   # uaccess for 047d:00f2
 packaging/fprintd/50-verimark-libfprint.conf
-patches/0001-...patch       # vendored driver patch (see PROVENANCE.md)
+vendor/libfprint/           # complete build-ready driver source (see VENDOR.md)
+vendor/SHA256SUMS           # integrity manifest checked before every build
+patches/0001-...patch       # the driver delta, human-readable (see PROVENANCE.md)
 docs/rea-notes.md           # hardware profile from the Windows driver
 ```
 

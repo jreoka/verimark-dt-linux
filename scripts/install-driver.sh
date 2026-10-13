@@ -8,7 +8,7 @@ if [[ ${EUID} -ne 0 ]]; then
 fi
 
 project_root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
-build_lib="${project_root}/worktrees/synaTudorMiS-verimark/libfprint/libfprint/.build-ubuntu/libfprint/libfprint-2.so.2.0.0"
+build_lib="${project_root}/vendor/libfprint/.build-ubuntu/libfprint/libfprint-2.so.2.0.0"
 pairing_file=/var/lib/fprint/verimark/047d-00f2/libfprint-persistent.bin
 install_dir=/opt/verimark-libfprint/lib64
 dropin_dir=/etc/systemd/system/fprintd.service.d
