@@ -6,17 +6,35 @@ set -euo pipefail
 
 project_root=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)
 src_dir="${project_root}/vendor/libfprint"
-build_dir="${src_dir}/.build-ubuntu"
+build_dir="${src_dir}/.build"
 
-for cmd in sha256sum meson ninja apt-get; do
+for cmd in sha256sum meson ninja; do
   command -v "${cmd}" >/dev/null 2>&1 || { echo "missing: ${cmd}" >&2; exit 1; }
 done
+# shellcheck source=lib/distro.sh
+source "$(dirname -- "${BASH_SOURCE[0]}")/lib/distro.sh"
 
-echo "-> installing build dependencies"
-sudo apt-get update -qq
-sudo apt-get install -y -qq meson ninja-build gcc pkg-config \
-  libglib2.0-dev libgusb-dev libssl-dev libpixman-1-dev libnss3-dev \
-  libgudev-1.0-dev libudev-dev libcairo2-dev
+echo "-> installing build dependencies (${DISTRO_FAMILY})"
+case "${DISTRO_FAMILY}" in
+  debian)
+    pkg_install meson ninja-build gcc pkg-config \
+      libglib2.0-dev libgusb-dev libssl-dev libpixman-1-dev libnss3-dev \
+      libgudev-1.0-dev libudev-dev libcairo2-dev
+    ;;
+  arch)
+    pkg_install meson ninja gcc pkgconf glib2 libgusb openssl pixman nss \
+      libgudev cairo systemd-libs
+    ;;
+  fedora)
+    pkg_install meson ninja-build gcc gcc-c++ pkgconf-pkg-config glib2-devel \
+      libgusb-devel openssl-devel pixman-devel nss-devel libgudev-devel \
+      systemd-devel cairo-devel
+    ;;
+  *)
+    echo "unsupported distro '${DISTRO_ID}' (need apt, pacman, or dnf based)" >&2
+    exit 1
+    ;;
+esac
 
 echo "-> verifying vendored source integrity"
 (cd "${project_root}/vendor" && sha256sum -c SHA256SUMS 2>&1 | grep -v ': OK$' || true) |

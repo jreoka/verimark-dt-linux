@@ -39,16 +39,20 @@ done
 
 echo
 echo "== software stack =="
+# shellcheck source=lib/distro.sh
+source "$(dirname -- "${BASH_SOURCE[0]}")/lib/distro.sh"
+echo "distro: ${DISTRO_ID} (family: ${DISTRO_FAMILY})"
 for bin in fprintd fprintd-enroll fprintd-verify fprintd-list; do
   if command -v "${bin}" >/dev/null 2>&1; then
     echo "  ${bin}: present"
   else
-    echo "  ${bin}: MISSING (apt install fprintd)"
+    echo "  ${bin}: MISSING (install fprintd via your package manager)"
   fi
 done
-if command -v dpkg-query >/dev/null 2>&1; then
-  dpkg-query -W -f='  libfprint: ${Version}\n' libfprint-2-2 2>/dev/null ||
-    echo "  libfprint: stock package not installed"
+if ver=$(libfprint_version); [[ -n ${ver} ]]; then
+  echo "  stock libfprint: ${ver} (does NOT support 047d:00f2; this repo builds one that does)"
+else
+  echo "  stock libfprint: not installed"
 fi
 if systemctl is-active --quiet fprintd 2>/dev/null; then
   echo "  fprintd service: active"

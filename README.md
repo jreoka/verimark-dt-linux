@@ -1,13 +1,20 @@
-# verimark-dt-ubuntu
+# verimark-dt-linux
 
 Use the **Kensington VeriMark DT fingerprint reader (USB `047d:00f2`)**
-on Ubuntu with `fprintd` — enroll, verify, login, unlock, `sudo`.
+on Linux with `fprintd` — enroll, verify, login, unlock, `sudo`.
 
-Stock Ubuntu's `libfprint` does **not** support this reader, so this repo
+Works on **Ubuntu 24.04+ / Debian, Arch (+ derivatives), Fedora (+
+derivatives)** — every script detects your distro and uses the native
+package manager (`apt`, `pacman`, `dnf`) and the native PAM tooling
+(`pam-auth-update`, direct PAM edits, `authselect`).
+
+Stock distros' `libfprint` does **not** support this reader, so this repo
 builds a patched `libfprint` (pinned sources, checksum-verified) natively
-on Ubuntu, installs it as a reversible `fprintd` override, and wires up
+on your distro, installs it as a reversible `fprintd` override, and wires up
 udev + PAM. The full driver build was compile-verified on Ubuntu 26.04 and
 the driver's offline hardware test passes (`synatlsmoc-kensington OK`).
+Arch/Fedora use the same flow with native package names (not run here —
+report back).
 
 ## Status / honesty notes
 
@@ -24,9 +31,13 @@ the driver's offline hardware test passes (`synatlsmoc-kensington OK`).
 
 ## Requirements
 
-- Ubuntu 24.04 LTS or newer, x86_64
+- Ubuntu 24.04 LTS+, Debian 12+, Arch (+ CachyOS/EndeavourOS/Manjaro),
+  or Fedora 40+ (+ Nobara/Bazzite*) — x86_64
 - The reader plugged **directly** into the PC (no hub) for pairing/enroll
-- `sudo` access, internet access for `apt` + git clones
+- `sudo` access, internet access for packages + the one-time source check
+
+\* Immutable/atomic variants (Bazzite, Silverblue): layer the build deps
+with `rpm-ostree install` and reboot first; the rest is unchanged.
 
 ## Install
 
@@ -45,8 +56,8 @@ kernel claimed, and your `fprintd`/`libfprint` versions.
 ./scripts/build-driver.sh
 ```
 
-Installs build deps via `apt`, integrity-checks the vendored source
-(`vendor/`, works offline), then builds `libfprint` with the
+Installs build deps via your native package manager, integrity-checks
+the vendored source (`vendor/`, works offline), then builds `libfprint` with the
 `synatlsmoc` driver and runs its offline test.
 Takes a few minutes. Re-runnable.
 
@@ -92,7 +103,9 @@ finger = working.
 sudo ./scripts/enable-pam.sh
 ```
 
-Uses Ubuntu's `pam-auth-update` (`libpam-fprintd`). Keep a terminal open
+Uses your distro's native PAM wiring (`pam-auth-update` on Debian/Ubuntu,
+`authselect` on Fedora, direct `system-local-login` + `sudo` edits with
+backups on Arch). Keep a terminal open
 and confirm password fallback still works before logging out.
 
 ## Troubleshooting
@@ -112,10 +125,10 @@ and confirm password fallback still works before logging out.
 
 ```sh
 scripts/probe.sh            # read-only device + stack detection
-scripts/build-driver.sh     # integrity-checked, offline-capable Ubuntu build
+scripts/build-driver.sh     # integrity-checked, multi-distro offline-capable build
 scripts/install-driver.sh   # /opt install + fprintd drop-in (reversible)
 scripts/uninstall-driver.sh # removes drop-in + /opt copy, restarts fprintd
-scripts/enable-pam.sh       # Ubuntu pam-auth-update wiring
+scripts/enable-pam.sh       # distro-native PAM wiring (pam-auth-update/authselect/PAM edits)
 scripts/test-device.sh      # fprintd discovery + enroll/verify smoke
 udev/70-verimark-dt.rules   # uaccess for 047d:00f2
 packaging/fprintd/50-verimark-libfprint.conf
