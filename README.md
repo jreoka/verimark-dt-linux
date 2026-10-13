@@ -97,6 +97,19 @@ fprintd-verify -f right-index-finger
 Lift the finger fully between scans. `verify-match` on the enrolled
 finger = working.
 
+### Resetting fingerprints (wipe enrollments)
+
+```sh
+./scripts/reset-fingerprints.sh [username]   # defaults to you
+```
+
+Lists the user's enrollments, asks for a typed `YES`, then deletes them
+all through `fprintd` and confirms the list is empty. This is the
+supported Linux-side reset — but know its limit: it removes enrollments
+through the stack, it is **not** a sensor-flash format (no such operation
+exists on Linux for this reader). For a full on-chip wipe, use the
+sibling Windows tool `kensington-reset` (vendor erase command `0x442028`).
+
 ### 5. Enable login / unlock / sudo (optional)
 
 ```sh
@@ -117,9 +130,10 @@ and confirm password fallback still works before logging out.
 - Pairing/marriage problems, LED matrix, packet captures: see the
   upstream project's docs (Credits) — that level of debugging needs the
   hardware in hand.
-- Never "fix" things by formatting sensor storage or deleting templates
-  from Linux; the Windows reset tool (`kensington-reset`, sibling repo)
-  is the safe way to wipe the reader.
+- Never "fix" things by formatting sensor storage or poking raw templates
+  at the driver level; use `./scripts/reset-fingerprints.sh` for enrollment
+  removal, and the Windows reset tool (`kensington-reset`, sibling repo)
+  for a full on-chip wipe.
 
 ## Files
 
@@ -130,6 +144,7 @@ scripts/install-driver.sh   # /opt install + fprintd drop-in (reversible)
 scripts/uninstall-driver.sh # removes drop-in + /opt copy, restarts fprintd
 scripts/enable-pam.sh       # distro-native PAM wiring (pam-auth-update/authselect/PAM edits)
 scripts/test-device.sh      # fprintd discovery + enroll/verify smoke
+scripts/reset-fingerprints.sh # delete all of a user's enrollments (typed YES)
 udev/70-verimark-dt.rules   # uaccess for 047d:00f2
 packaging/fprintd/50-verimark-libfprint.conf
 vendor/libfprint/           # complete build-ready driver source (see VENDOR.md)
