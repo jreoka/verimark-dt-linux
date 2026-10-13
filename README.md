@@ -108,7 +108,7 @@ all through `fprintd` and confirms the list is empty. This is the
 supported Linux-side reset — but know its limit: it removes enrollments
 through the stack, it is **not** a sensor-flash format (no such operation
 exists on Linux for this reader). For a full on-chip wipe, use the
-sibling Windows tool `kensington-reset` (vendor erase command `0x442028`).
+sibling Windows tool `kensington-reset` ([kensington-reset-windows](https://github.com/jreoka/kensington-reset-windows), vendor erase command `0x442028`).
 
 ### 5. Enable login / unlock / sudo (optional)
 
@@ -132,7 +132,8 @@ and confirm password fallback still works before logging out.
   hardware in hand.
 - Never "fix" things by formatting sensor storage or poking raw templates
   at the driver level; use `./scripts/reset-fingerprints.sh` for enrollment
-  removal, and the Windows reset tool (`kensington-reset`, sibling repo)
+  removal, and the Windows reset tool (sibling repo
+  [kensington-reset-windows](https://github.com/jreoka/kensington-reset-windows))
   for a full on-chip wipe.
 
 ## Files
