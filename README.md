@@ -104,11 +104,25 @@ finger = working.
 ```
 
 Lists the user's enrollments, asks for a typed `YES`, then deletes them
-all through `fprintd` and confirms the list is empty. This is the
-supported Linux-side reset — but know its limit: it removes enrollments
-through the stack, it is **not** a sensor-flash format (no such operation
-exists on Linux for this reader). For a full on-chip wipe, use the
-sibling Windows tool `kensington-reset` ([kensington-reset-windows](https://github.com/jreoka/kensington-reset-windows), vendor erase command `0x442028`).
+all through `fprintd` and confirms the list is empty. This is the safe,
+everyday reset — but know its limit: it removes enrollments through the
+stack, it does **not** format the sensor flash. For a full on-chip wipe,
+see "Full sensor flash format" below (or the sibling Windows tool
+`kensington-reset`).
+
+### Full sensor flash format (DB2 format, destructive)
+
+```sh
+sudo ./scripts/sensor-format.sh
+```
+
+Sends `DB2_FORMAT (0xA5)` straight to the sensor through the driver's
+`clear_storage` path — the closest Linux equivalent of the Windows
+vendor erase. **Destructive and irreversible on-device**: every template
+on the chip is destroyed, and the host pairing may stop working (expect
+to re-pair + re-enroll). Requires a typed `FORMAT-CHIP`, a completed
+pairing, and a `/var/lib/fprint` backup. Prefer
+`reset-fingerprints.sh` unless you need the whole chip clean.
 
 ### 5. Enable login / unlock / sudo (optional)
 
@@ -146,6 +160,8 @@ scripts/uninstall-driver.sh # removes drop-in + /opt copy, restarts fprintd
 scripts/enable-pam.sh       # distro-native PAM wiring (pam-auth-update/authselect/PAM edits)
 scripts/test-device.sh      # fprintd discovery + enroll/verify smoke
 scripts/reset-fingerprints.sh # delete all of a user's enrollments (typed YES)
+scripts/sensor-format.sh     # FULL sensor flash format DB2 (typed FORMAT-CHIP)
+tools/sensor-format.c        # C tool behind sensor-format.sh (DB2_FORMAT 0xA5)
 udev/70-verimark-dt.rules   # uaccess for 047d:00f2
 packaging/fprintd/50-verimark-libfprint.conf
 vendor/libfprint/           # complete build-ready driver source (see VENDOR.md)
