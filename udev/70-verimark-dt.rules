@@ -1,0 +1,3 @@
+# Give the logged-in user access to the VeriMark DT fingerprint interface.
+# Interface 0 stays with the kernel HID driver (FIDO2 keeps working there).
+ACTION=="add", SUBSYSTEM=="usb", ATTRS{idVendor}=="047d", ATTRS{idProduct}=="00f2", TAG+="uaccess"
